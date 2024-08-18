@@ -1,79 +1,68 @@
 import React from "react";
-import { useFormContext } from "react-hook-form";
 
 const FieldComponent = ({ field }) => {
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext();
+  switch (field.type) {
+    case "text":
+    case "textarea":
+      return (
+        <div className="field">
+          <label>{field.label}</label>
+          {field.type === "text" && <input type="text" name={field.name} />}
+          {field.type === "textarea" && <textarea name={field.name} />}
+        </div>
+      );
 
-  const renderField = () => {
-    switch (field.type) {
-      case "text":
-      case "textarea":
-        return (
-          <input
-            type={field.type}
-            {...register(field.name, {
-              required: field.validation?.required,
-              ...field.validation,
-            })}
-            placeholder={field.label}
-          />
-        );
-      case "dropdown":
-        return (
-          <select
-            {...register(field.name, { required: field.validation?.required })}
-          >
-            {field.options.map((option, index) => (
-              <option key={index} value={option.value}>
-                {option.label}
+    case "dropdown":
+      return (
+        <div className="field">
+          <label>{field.label}</label>
+          <select name={field.name}>
+            {field.options.map((opt, index) => (
+              <option key={index} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
-        );
-      case "checkbox":
-        return (
-          <input
-            type="checkbox"
-            {...register(field.name, { required: field.validation?.required })}
-          />
-        );
-      case "radio":
-        return field.options.map((option, index) => (
-          <label key={index}>
-            <input
-              type="radio"
-              value={option.value}
-              {...register(field.name, {
-                required: field.validation?.required,
-              })}
-            />
-            {option.label}
-          </label>
-        ));
-      case "file":
-        return (
-          <input
-            type="file"
-            {...register(field.name, { required: field.validation?.required })}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+        </div>
+      );
 
-  return (
-    <div className="field-container">
-      <label>{field.label}</label>
-      {renderField()}
-      {errors[field.name] && (
-        <p style={{ color: "red" }}>{errors[field.name]?.message}</p>
-      )}
-    </div>
-  );
+    case "checkbox":
+      return (
+        <div className="field">
+          <label>{field.label}</label>
+          {field.options.map((opt, index) => (
+            <div key={index} className="checkbox-option">
+              <input type="checkbox" name={field.name} value={opt.value} />
+              <label>{opt.label}</label>
+            </div>
+          ))}
+        </div>
+      );
+
+    case "radio":
+      return (
+        <div className="field">
+          <label>{field.label}</label>
+          {field.options.map((opt, index) => (
+            <div key={index} className="radio-option">
+              <input type="radio" name={field.name} value={opt.value} />
+              <label>{opt.label}</label>
+            </div>
+          ))}
+        </div>
+      );
+
+    case "file":
+      return (
+        <div className="field">
+          <label>{field.label}</label>
+          <input type="file" name={field.name} />
+        </div>
+      );
+
+    default:
+      return null;
+  }
 };
 
 export default FieldComponent;

@@ -1,57 +1,48 @@
+// src/hooks/useFormBuilder.js
 import { useState } from "react";
 
 export const useFormBuilder = () => {
   const [formFields, setFormFields] = useState([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
-  const handleAddField = (newField) => {
-    setFormFields([...formFields, newField]);
+  const handleAddField = (field) => {
+    setFormFields([...formFields, field]);
   };
 
   const handleRemoveField = (index) => {
     setFormFields(formFields.filter((_, i) => i !== index));
   };
 
-  const handleLoadConfiguration = (configJson) => {
-    try {
-      const parsedConfig = JSON.parse(configJson);
-
-      const isValid =
-        Array.isArray(parsedConfig) &&
-        parsedConfig.every(
-          (field) =>
-            field.hasOwnProperty("name") &&
-            field.hasOwnProperty("label") &&
-            field.hasOwnProperty("type")
-        );
-
-      if (!isValid) {
-        throw new Error(
-          'Invalid JSON structure. Each field must have "name", "label", and "type" properties.'
-        );
-      }
-
-      setFormFields(parsedConfig);
-      setError("");
-    } catch (err) {
-      setError(`Error loading configuration: ${err.message}`);
-    }
+  const handleAddOption = (fieldIndex, option) => {
+    setFormFields(
+      formFields.map((field, index) => {
+        if (index === fieldIndex) {
+          return {
+            ...field,
+            options: [...(field.options || []), option],
+          };
+        }
+        return field;
+      })
+    );
   };
 
   const handleSaveConfiguration = () => {
-    const blob = new Blob([JSON.stringify(formFields, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "form-config.json";
-    a.click();
-    URL.revokeObjectURL(url);
+    // Implement your save logic
+    console.log("Configuration saved:", formFields);
   };
 
-  const onSubmit = (data) => {
-    console.log("Form data:", data);
+  const handleLoadConfiguration = (configJson) => {
+    try {
+      const config = JSON.parse(configJson);
+      if (Array.isArray(config.formFields)) {
+        setFormFields(config.formFields);
+      } else {
+        throw new Error("Invalid configuration format.");
+      }
+    } catch (e) {
+      setError("Failed to load configuration. " + e.message);
+    }
   };
 
   return {
@@ -59,8 +50,8 @@ export const useFormBuilder = () => {
     error,
     handleAddField,
     handleRemoveField,
-    handleLoadConfiguration,
+    handleAddOption,
     handleSaveConfiguration,
-    onSubmit,
+    handleLoadConfiguration,
   };
 };
