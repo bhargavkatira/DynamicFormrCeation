@@ -9,9 +9,11 @@ const FormBuilder = () => {
     formFields,
     error,
     handleAddField,
-    handleRemoveField: removeFieldFromBuilder, // Rename here
-    handleLoadConfiguration,
+    handleRemoveField: removeFieldFromBuilder,
+    handleAddOption,
+    handleRemoveOption,
     handleSaveConfiguration,
+    handleLoadConfiguration,
   } = useFormBuilder();
 
   const methods = useForm();
@@ -26,6 +28,8 @@ const FormBuilder = () => {
   });
   const [configJson, setConfigJson] = useState("");
   const [submissionMessage, setSubmissionMessage] = useState("");
+  const [selectedFieldIndex, setSelectedFieldIndex] = useState(null);
+  const [optionValue, setOptionValue] = useState("");
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
@@ -67,10 +71,32 @@ const FormBuilder = () => {
     reset();
   };
 
-  // Rename this function to avoid conflict
   const handleRemoveField = (index) => {
     removeFieldFromBuilder(index);
     setSubmissionMessage(""); // Clear success message when removing a field
+  };
+
+  const handleAddOptionClick = () => {
+    if (optionValue && selectedFieldIndex !== null) {
+      const updatedOption = { label: optionValue, value: optionValue };
+      handleAddOption(selectedFieldIndex, updatedOption);
+      setOptionValue("");
+    } else {
+      alert("Please select a field and enter an option.");
+    }
+  };
+
+  const handleOptionChange = (e) => {
+    setOptionValue(e.target.value);
+  };
+
+  const handleFieldSelect = (index) => {
+    setSelectedFieldIndex(index);
+    setOptionValue(""); // Clear the input field
+  };
+
+  const handleRemoveOptionClick = (fieldIndex, optionIndex) => {
+    handleRemoveOption(fieldIndex, optionIndex);
   };
 
   return (
@@ -124,6 +150,52 @@ const FormBuilder = () => {
           {formFields.map((field, index) => (
             <div className="field-container" key={index}>
               <FieldComponent field={field} />
+              {["dropdown", "checkbox", "radio"].includes(field.type) && (
+                <div>
+                  <button
+                    type="button"
+                    className="edit-options-button"
+                    onClick={() => handleFieldSelect(index)}
+                  >
+                    Manage Options
+                  </button>
+                  {selectedFieldIndex === index && (
+                    <div className="options-management">
+                      <input
+                        type="text"
+                        value={optionValue}
+                        onChange={handleOptionChange}
+                        placeholder="Enter new option"
+                      />
+                      <button
+                        type="button"
+                        className="add-option-button"
+                        onClick={handleAddOptionClick}
+                      >
+                        Add Option
+                      </button>
+                      {field.options && field.options.length > 0 && (
+                        <div className="options-list">
+                          {field.options.map((opt, i) => (
+                            <div key={i} className="option-item">
+                              <span>{opt.label}</span>
+                              <button
+                                type="button"
+                                className="remove-option-button"
+                                onClick={() =>
+                                  handleRemoveOptionClick(index, i)
+                                }
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <button
                 type="button"
                 className="delete"
