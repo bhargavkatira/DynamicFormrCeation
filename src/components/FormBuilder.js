@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import FieldComponent from "./FieldComponent";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 import "./styles.css"; // Ensure you import the CSS file
 import { useFormBuilder } from "../hooks/useFormBuilder";
 
@@ -57,8 +60,15 @@ const FormBuilder = () => {
   };
 
   const handleLoad = () => {
-    handleLoadConfiguration(configJson);
-    setSubmissionMessage(""); // Clear success message when loading configuration
+    try {
+      const config = JSON.parse(configJson);
+      handleLoadConfiguration(config); // Pass the parsed config to your hook
+      setSubmissionMessage(""); // Clear success message when loading configuration
+    } catch (e) {
+      setError(
+        "Invalid JSON format. Please ensure the JSON is correctly formatted."
+      );
+    }
   };
 
   const handleSave = () => {
@@ -72,8 +82,7 @@ const FormBuilder = () => {
   };
 
   const handleRemoveField = (index) => {
-    removeFieldFromBuilder(index);
-    setSubmissionMessage(""); // Clear success message when removing a field
+    setFormFields(formFields.filter((_, i) => i !== index));
   };
 
   const handleAddOptionClick = () => {
@@ -96,7 +105,11 @@ const FormBuilder = () => {
   };
 
   const handleRemoveOptionClick = (fieldIndex, optionIndex) => {
-    handleRemoveOption(fieldIndex, optionIndex);
+    if (handleRemoveOption) {
+      handleRemoveOption(fieldIndex, optionIndex);
+    } else {
+      console.error("handleRemoveOption is not defined");
+    }
   };
 
   return (
@@ -172,22 +185,22 @@ const FormBuilder = () => {
                         className="add-option-button"
                         onClick={handleAddOptionClick}
                       >
-                        Add Option
+                        <AddIcon />
                       </button>
                       {field.options && field.options.length > 0 && (
                         <div className="options-list">
                           {field.options.map((opt, i) => (
                             <div key={i} className="option-item">
                               <span>{opt.label}</span>
-                              <button
-                                type="button"
+                              <IconButton
+                                aria-label="delete"
                                 className="remove-option-button"
                                 onClick={() =>
                                   handleRemoveOptionClick(index, i)
                                 }
                               >
-                                Remove
-                              </button>
+                                <DeleteIcon />
+                              </IconButton>
                             </div>
                           ))}
                         </div>
@@ -201,7 +214,9 @@ const FormBuilder = () => {
                 className="delete"
                 onClick={() => handleRemoveField(index)}
               >
-                Delete
+                <IconButton aria-label="delete">
+                  <DeleteIcon />
+                </IconButton>
               </button>
             </div>
           ))}

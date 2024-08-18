@@ -32,17 +32,26 @@ export const useFormBuilder = () => {
     console.log("Configuration saved:", formFields);
   };
 
-  const handleLoadConfiguration = (configJson) => {
-    try {
-      const config = JSON.parse(configJson);
-      if (Array.isArray(config.formFields)) {
-        setFormFields(config.formFields);
-      } else {
-        throw new Error("Invalid configuration format.");
-      }
-    } catch (e) {
-      setError("Failed to load configuration. " + e.message);
+  const handleLoadConfiguration = (config) => {
+    if (Array.isArray(config)) {
+      setFormFields(config);
+      setError(""); // Clear error message if loading is successful
+    } else {
+      setError("Invalid configuration format. Expected an array of fields.");
     }
+  };
+
+  const handleRemoveOption = (fieldIndex, optionIndex) => {
+    setFormFields((prev) =>
+      prev.map((field, i) =>
+        i === fieldIndex
+          ? {
+              ...field,
+              options: field.options.filter((_, j) => j !== optionIndex),
+            }
+          : field
+      )
+    );
   };
 
   return {
@@ -51,6 +60,7 @@ export const useFormBuilder = () => {
     handleAddField,
     handleRemoveField,
     handleAddOption,
+    handleRemoveOption,
     handleSaveConfiguration,
     handleLoadConfiguration,
   };
